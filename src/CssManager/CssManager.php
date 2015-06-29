@@ -43,7 +43,7 @@ class CssManager
     {
         $css = $this->css;
         $css = preg_replace('/\/\*.*?\*\//ms', '', $css);
-        $css = preg_replace('/([^\'"]+?)(\<!--|--\>)([^\'"]+?)/ms', '$1$3', $css);
+        //$css = preg_replace('/([^\'"]+?)(\<!--|--\>)([^\'"]+?)/ms', '$1$3', $css);
         preg_match_all('/@import.+?\);|@.+?\}[^\}]*?\}/ms', $css, $blocks);
         array_push($blocks[0], preg_replace('/@.+?\}[^\}]*?\}/ms', '', $css));
         $ordered = [];

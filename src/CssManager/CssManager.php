@@ -50,22 +50,30 @@ class CssManager
 
         foreach ($blocks[0] as $i => $block) {
             if (substr($block, 0, 6) === '@media') {
-                $ordered_key = preg_replace('/^(@media[^\{]+)\{.*\}$/ms', '$1', $block);
-                $ordered_value = preg_replace('/^@media[^\{]+\{(.*)\}$/ms', '$1', $block);
+                $orderedKey = preg_replace('/^(@media[^\{]+)\{.*\}$/ms', '$1', $block);
+                $orderedValue = preg_replace('/^@media[^\{]+\{(.*)\}$/ms', '$1', $block);
             } elseif (substr($block, 0, 1) === '@') {
-                $ordered_key = $block;
-                $ordered_value = $block;
+                $orderedKey = $block;
+                $orderedValue = $block;
             } else {
-                $ordered_key = 'main';
-                $ordered_value = $block;
+                $orderedKey = 'main';
+                $orderedValue = $block;
             }
 
-            $ordered[$ordered_key] = preg_split(
+            $newOrdered = preg_split(
                 '/([^\'"\{\}]*?[\'"].*?(?<!\\\)[\'"][^\'"\{\}]*?)[\{\}]|([^\'"\{\}]*?)[\{\}]/',
-                trim($ordered_value, " \r\n\t"),
+                trim($orderedValue, " \r\n\t"),
                 -1,
                 PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE
             );
+
+            if (isset($ordered[$orderedKey])) {
+                foreach ($newOrdered as $newOrd) {
+                    array_push($ordered[$orderedKey], $newOrd);
+                }
+            } else {
+                $ordered[$orderedKey] = $newOrdered;
+            }
         }
 
         foreach ($ordered as $key => $val) {
@@ -113,24 +121,36 @@ class CssManager
         if ($this->parsed) {
             $output = '';
             foreach ($this->parsed as $media => $content) {
-                if (substr($media, 0, 6) === '@media') {
-                    $output .= $media . " {\n";
-                    $prefix = "\t";
+                if (substr($media, 0, 1) != '@') {
+                    foreach ($content as $selector => $rules) {
+                        $output .= $selector . " { ";
+                        foreach ($rules as $property => $value) {
+                            $output .= $property.': '.$value;
+                            $output .= ";";
+                        }
+                        $output .= "}\n";
+                    }
                 } else {
-                    $prefix = "";
+                    if (substr($media, 0, 6) === '@media') {
+                        $output .= $media . " {\n";
+                        foreach ($content as $selector => $rules) {
+                            $output .= $selector . " { ";
+                            foreach ($rules as $property => $value) {
+                                $output .= $property.': '.$value;
+                                $output .= ";";
+                            }
+                            $output .= "}\n";
+                        }
+                        $output .= "}\n";
+                    } else {
+                        if (substr($media, 0, 7) != '@import') {
+                            $output .= $media . "}\n";
+                        } else {
+                            $output .= $media . "\n";
+                        }
+                    }
                 }
 
-                foreach ($content as $selector => $rules) {
-                    $output .= $prefix.$selector . " {\n";
-                    foreach ($rules as $property => $value) {
-                        $output .= $prefix."\t".$property.': '.$value;
-                        $output .= ";\n";
-                    }
-                    $output .= $prefix."}\n\n";
-                }
-                if (substr($media, 0, 6) === '@media') {
-                    $output .= "}\n\n";
-                }
             }
             return $output;
         }

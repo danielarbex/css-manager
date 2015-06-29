@@ -42,15 +42,16 @@ var_dump($cssManager->parsed);
  * }
  */
 $cssContent = file_get_contents(__DIR__ . '/css/css.css');
-$cssManager->loadCss($cssContent)
-           ->cssToArray();
+$cssString = $cssManager->loadCss($cssContent)
+                     ->cssToArray()
+                     ->arrayToCss();
            
 /**
  * string(32) ".class_name {
  *  width:  100%;
  * }
  */
-var_dump($cssManager->parsed);
+var_dump($cssString);
 ```
 
 ### Changing property

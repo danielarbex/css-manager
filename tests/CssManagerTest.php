@@ -25,7 +25,6 @@ class CssManagerTest extends PHPUnit_Framework_TestCase
         $cssManager->loadCss($cssContent)
                    ->cssToArray();
 
-
         $this->assertArraySubset(['width' => ' 100%'], $cssManager->parsed['main']['.class_name']);
     }
 
